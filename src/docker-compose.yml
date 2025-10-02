@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  # OneNote MCP Server (Python)
+  onenote-mcp:
+    build:
+      context: ./mcp/onenote_mcp
+      dockerfile: Dockerfile
+    container_name: onenote-mcp
+    ports:
+      - "8001:8000"
+    env_file:
+      - ./mcp/onenote_mcp/.env
+    volumes:
+      - ./mcp/onenote_mcp:/app
+    networks:
+      - agent-network
+
+  # Outlook MCP Server (C#)
+  outlook-mcp:
+    build:
+      context: ./mcp/outlook_mcp
+      dockerfile: Dockerfile
+    container_name: outlook-mcp
+    ports:
+      - "8002:8000"
+    env_file:
+      - ./mcp/outlook_mcp/.env
+    volumes:
+      - ./mcp/outlook_mcp:/app
+    networks:
+      - agent-network
+
+  # OneNote Search Agent
+  onenote-search-agent:
+    build:
+      context: ./agents/onenote_search_agent
+      dockerfile: Dockerfile
+    container_name: onenote-search-agent
+    ports:
+      - "8003:8000"
+    env_file:
+      - ./agents/onenote_search_agent/.env
+    environment:
+      - ONENOTE_MCP_URL=http://onenote-mcp:8000
+    depends_on:
+      - onenote-mcp
+    volumes:
+      - ./agents/onenote_search_agent:/app
+    networks:
+      - agent-network
+
+  # Outlook Schedule Agent
+  outlook-schedule-agent:
+    build:
+      context: ./agents/outlook_schedule_agent
+      dockerfile: Dockerfile
+    container_name: outlook-schedule-agent
+    ports:
+      - "8004:8000"
+    env_file:
+      - ./agents/outlook_schedule_agent/.env
+    environment:
+      - OUTLOOK_MCP_URL=http://outlook-mcp:8000
+    depends_on:
+      - outlook-mcp
+    volumes:
+      - ./agents/outlook_schedule_agent:/app
+    networks:
+      - agent-network
+
+  # Main Application
+  main-app:
+    build:
+      context: ./main_app
+      dockerfile: Dockerfile
+    container_name: main-app
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./main_app/.env
+    environment:
+      - ONENOTE_AGENT_URL=http://onenote-search-agent:8000
+      - OUTLOOK_AGENT_URL=http://outlook-schedule-agent:8000
+    depends_on:
+      - onenote-search-agent
+      - outlook-schedule-agent
+    volumes:
+      - ./main_app:/app
+    networks:
+      - agent-network
+
+networks:
+  agent-network:
+    driver: bridge
+
+volumes:
+  app-data:
