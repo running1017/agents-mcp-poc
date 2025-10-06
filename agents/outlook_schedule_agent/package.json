@@ -1,0 +1,41 @@
+{
+  "name": "outlook-schedule-agent",
+  "version": "1.0.0",
+  "description": "Outlook schedule agent using a2a-js and Express",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "keywords": [
+    "a2a",
+    "agent",
+    "outlook",
+    "schedule"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@a2a-js/sdk": "^0.0.11",
+    "express": "^4.21.2",
+    "dotenv": "^16.4.7",
+    "axios": "^1.7.9",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.5",
+    "@typescript-eslint/eslint-plugin": "^8.20.0",
+    "@typescript-eslint/parser": "^8.20.0",
+    "eslint": "^9.18.0",
+    "prettier": "^3.4.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

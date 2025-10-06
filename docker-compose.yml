@@ -48,7 +48,7 @@ services:
     networks:
       - agent-network
 
-  # Outlook Schedule Agent
+  # Outlook Schedule Agent (Node.js + a2a-js + Express)
   outlook-schedule-agent:
     build:
       context: ./agents/outlook_schedule_agent
@@ -60,12 +60,15 @@ services:
       - ./agents/outlook_schedule_agent/.env
     environment:
       - OUTLOOK_MCP_URL=http://outlook-mcp:8000
+      - NODE_ENV=development
     depends_on:
       - outlook-mcp
     volumes:
       - ./agents/outlook_schedule_agent:/app
+      - /app/node_modules
     networks:
       - agent-network
+    command: npm run dev
 
   # Main Application (Next.js)
   main-app:
