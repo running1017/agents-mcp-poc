@@ -1,0 +1,7 @@
+a2a-sdk>=0.3.0
+uvicorn>=0.34.2
+starlette>=0.46.2
+pydantic>=2.11.4
+httpx>=0.28.1
+python-dotenv>=1.1.0
+sse-starlette>=2.3.5
