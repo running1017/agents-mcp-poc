@@ -4,7 +4,6 @@ import logging
 from typing import Annotated, Optional
 
 from fastmcp import FastMCP
-from fastmcp.exceptions import InvalidRequestError
 from pydantic import BaseModel, Field
 
 from .auth import auth_service
@@ -79,7 +78,7 @@ async def get_graph_client(
         Authenticated GraphClient instance
 
     Raises:
-        InvalidRequestError: If OBO token acquisition fails
+        ValueError: If OBO token acquisition fails
     """
     # Parse trace context from headers
     trace_context = None
@@ -93,7 +92,7 @@ async def get_graph_client(
     obo_token = await auth_service.get_obo_token(access_token)
     if not obo_token:
         logger.error("Failed to acquire OBO token")
-        raise InvalidRequestError("Authentication failed: Unable to acquire OBO token")
+        raise ValueError("Authentication failed: Unable to acquire OBO token")
 
     return GraphClient(obo_token, trace_context)
 
