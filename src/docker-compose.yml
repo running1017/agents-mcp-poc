@@ -69,24 +69,22 @@ services:
     networks:
       - agent-network
 
-  # Main Application
+  # Main Application (Next.js)
   main-app:
     build:
-      context: ./main_app
+      context: ./agents/main_app
       dockerfile: Dockerfile
     container_name: main-app
     ports:
       - "8000:8000"
     env_file:
-      - ./main_app/.env
+      - ./agents/main_app/.env
     environment:
-      - ONENOTE_AGENT_URL=http://onenote-search-agent:8000
-      - OUTLOOK_AGENT_URL=http://outlook-schedule-agent:8000
+      - ONENOTE_SEARCH_AGENT_URL=http://onenote-search-agent:8000
+      - OUTLOOK_SCHEDULE_AGENT_URL=http://outlook-schedule-agent:8000
     depends_on:
       - onenote-search-agent
       - outlook-schedule-agent
-    volumes:
-      - ./main_app:/app
     networks:
       - agent-network
 
