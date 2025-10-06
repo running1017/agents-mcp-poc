@@ -8,3 +8,5 @@ npm-debug.log
 coverage
 .vscode
 .idea
+.env*
+!.env.example

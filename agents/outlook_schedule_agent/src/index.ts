@@ -1,6 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import { A2AExpressApp } from '@a2a-js/sdk';
+import type { AgentCard } from '@a2a-js/sdk';
+import { DefaultRequestHandler, InMemoryTaskStore } from '@a2a-js/sdk/server';
+import { A2AExpressApp } from '@a2a-js/sdk/server/express';
 import { OutlookScheduleExecutor } from './executor';
 import { logger } from './utils/logger';
 
@@ -9,44 +11,53 @@ dotenv.config();
 const PORT = process.env.PORT || 8000;
 const AGENT_NAME = process.env.AGENT_NAME || 'Outlook Schedule Agent';
 const AGENT_DESCRIPTION = process.env.AGENT_DESCRIPTION || 'An agent that checks Outlook calendar and coordinates availability';
+const AGENT_URL = process.env.AGENT_URL || `http://localhost:${PORT}/`;
 
 async function main() {
   try {
     const app = express();
 
     // Health check endpoint
-    app.get('/health', (req, res) => {
+    app.get('/health', (_req, res) => {
       res.json({ status: 'ok', agent: AGENT_NAME });
     });
+
+    // Create agent card
+    const agentCard: AgentCard = {
+      name: AGENT_NAME,
+      description: AGENT_DESCRIPTION,
+      protocolVersion: '0.3.0',
+      version: '1.0.0',
+      url: AGENT_URL,
+      capabilities: {
+        streaming: true
+      },
+      defaultInputModes: ['text/plain'],
+      defaultOutputModes: ['text/plain'],
+      skills: [
+        {
+          id: 'outlook-calendar',
+          name: 'Outlook Calendar',
+          description: 'Check Outlook calendar and coordinate availability',
+          tags: ['outlook', 'calendar', 'schedule']
+        }
+      ]
+    };
 
     // Create A2A agent executor
     const executor = new OutlookScheduleExecutor();
 
-    // Create A2A Express app
-    const a2aApp = new A2AExpressApp({
-      executor,
-      agentCard: {
-        name: AGENT_NAME,
-        description: AGENT_DESCRIPTION,
-        version: '1.0.0',
-        capabilities: {
-          streaming: true,
-          tasks: true
-        },
-        contact: {
-          email: process.env.AGENT_CONTACT_EMAIL || 'admin@example.com'
-        }
-      },
-      logger: {
-        debug: (msg: string) => logger.debug(msg),
-        info: (msg: string) => logger.info(msg),
-        warn: (msg: string) => logger.warn(msg),
-        error: (msg: string) => logger.error(msg)
-      }
-    });
+    // Create request handler
+    const taskStore = new InMemoryTaskStore();
+    const requestHandler = new DefaultRequestHandler(
+      agentCard,
+      taskStore,
+      executor
+    );
 
-    // Mount A2A routes
-    app.use(a2aApp.getRouter());
+    // Create A2A Express app
+    const a2aApp = new A2AExpressApp(requestHandler);
+    a2aApp.setupRoutes(app);
 
     app.listen(PORT, () => {
       logger.info(`${AGENT_NAME} is running on port ${PORT}`);
